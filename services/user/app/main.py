@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
 from app.core.config import settings
 from app.core.logging import setup_logging, get_logger
+from app.core.redis import get_redis, close_redis
 from app.api.v1.router import router
 
 logger = get_logger(__name__)
@@ -11,11 +12,11 @@ logger = get_logger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # ── Startup ──────────────────────────────────────────────
     setup_logging()
     logger.info("starting", service=settings.service_name, env=settings.environment)
+    await get_redis()  # initialize connection on startup
     yield
-    # ── Shutdown ─────────────────────────────────────────────
+    await close_redis()
     logger.info("shutting down", service=settings.service_name)
 
 
@@ -35,10 +36,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mounts /metrics endpoint — Prometheus scrapes this
 Instrumentator().instrument(app).expose(app)
-
-# All API routes live under /api/v1/
 app.include_router(router, prefix="/api/v1")
 
 
