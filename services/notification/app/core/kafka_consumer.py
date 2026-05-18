@@ -1,7 +1,7 @@
-import asyncio
 import json
+
 from aiokafka import AIOKafkaConsumer
-from aiokafka.errors import KafkaConnectionError
+
 from app.core.config import settings
 from app.core.logging import get_logger
 

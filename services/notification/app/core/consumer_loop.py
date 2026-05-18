@@ -1,8 +1,10 @@
 import asyncio
+
 from aiokafka.errors import KafkaConnectionError
-from app.core.kafka_consumer import get_consumer, TOPICS
-from app.services.notification_service import NotificationService
+
+from app.core.kafka_consumer import get_consumer
 from app.core.logging import get_logger
+from app.services.notification_service import NotificationService
 
 logger = get_logger(__name__)
 

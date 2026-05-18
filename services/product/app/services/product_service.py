@@ -1,14 +1,16 @@
-import uuid
 import math
+import uuid
 from decimal import Decimal
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, or_
-from sqlalchemy.orm import selectinload
+
 from fastapi import HTTPException, status
-from app.models.product import Product, Category
-from app.schemas.product import ProductCreate, ProductUpdate, CategoryCreate
-from app.core.redis import Cache
+from sqlalchemy import func, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+
 from app.core.logging import get_logger
+from app.core.redis import Cache
+from app.models.product import Category, Product
+from app.schemas.product import CategoryCreate, ProductCreate, ProductUpdate
 
 logger = get_logger(__name__)
 

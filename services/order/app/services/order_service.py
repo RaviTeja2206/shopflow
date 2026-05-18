@@ -1,17 +1,23 @@
-import uuid
 import math
+import uuid
 from decimal import Decimal
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
-from sqlalchemy.orm import selectinload
-from fastapi import HTTPException, status
-import httpx
 
+import httpx
+from fastapi import HTTPException, status
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+
+from app.core.http_client import get_product
+from app.core.kafka_producer import (
+    TOPIC_ORDER_CANCELLED,
+    TOPIC_ORDER_CREATED,
+    TOPIC_ORDER_UPDATED,
+    publish,
+)
+from app.core.logging import get_logger
 from app.models.order import Order, OrderItem, OrderStatus
 from app.schemas.order import OrderCreate, OrderStatusUpdate
-from app.core.http_client import get_product
-from app.core.kafka_producer import publish, TOPIC_ORDER_CREATED, TOPIC_ORDER_UPDATED, TOPIC_ORDER_CANCELLED
-from app.core.logging import get_logger
 
 logger = get_logger(__name__)
 

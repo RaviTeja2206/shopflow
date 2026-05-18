@@ -1,3 +1,3 @@
-from app.models.user import User, RefreshToken
+from app.models.user import RefreshToken, User
 
 __all__ = ["User", "RefreshToken"]

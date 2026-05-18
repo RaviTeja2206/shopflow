@@ -2,8 +2,8 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 from typing import Annotated
+
 from pydantic import BaseModel, Field, field_validator
-from pydantic import condecimal
 
 # Reusable type — Decimal with max 10 digits, 2 decimal places, must be > 0
 Price = Annotated[Decimal, Field(gt=0, max_digits=10, decimal_places=2)]

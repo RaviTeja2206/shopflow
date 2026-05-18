@@ -1,13 +1,15 @@
 import asyncio
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
-from app.core.config import settings
-from app.core.logging import setup_logging, get_logger
-from app.core.kafka_consumer import close_consumer
-from app.core.consumer_loop import consume_loop
+
 from app.api.v1.router import router
+from app.core.config import settings
+from app.core.consumer_loop import consume_loop
+from app.core.kafka_consumer import close_consumer
+from app.core.logging import get_logger, setup_logging
 
 logger = get_logger(__name__)
 

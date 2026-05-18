@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
-from pydantic import BaseModel, EmailStr, Field, field_validator
 
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 # ── Request schemas (what comes IN) ───────────────────────────
 

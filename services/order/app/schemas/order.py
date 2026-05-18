@@ -2,7 +2,9 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 from typing import Annotated
+
 from pydantic import BaseModel, Field
+
 from app.models.order import OrderStatus
 
 Price = Annotated[Decimal, Field(gt=0, max_digits=10, decimal_places=2)]

@@ -1,12 +1,14 @@
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
-from app.core.config import settings
-from app.core.logging import setup_logging, get_logger
-from app.core.kafka_producer import get_producer, close_producer
-from app.core.http_client import get_http_client, close_http_client
+
 from app.api.v1.router import router
+from app.core.config import settings
+from app.core.http_client import close_http_client, get_http_client
+from app.core.kafka_producer import close_producer, get_producer
+from app.core.logging import get_logger, setup_logging
 
 logger = get_logger(__name__)
 

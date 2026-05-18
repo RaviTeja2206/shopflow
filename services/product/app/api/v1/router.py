@@ -1,12 +1,17 @@
 import uuid
 from decimal import Decimal
+
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.db.session import get_db
 from app.schemas.product import (
-    CategoryCreate, CategoryResponse,
-    ProductCreate, ProductUpdate, ProductResponse,
+    CategoryCreate,
+    CategoryResponse,
     PaginatedProducts,
+    ProductCreate,
+    ProductResponse,
+    ProductUpdate,
 )
 from app.services.product_service import ProductService
 
