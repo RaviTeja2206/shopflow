@@ -46,3 +46,8 @@ cloud-up:
 
 cloud-down:
 	cd infra/terraform && terraform destroy -auto-approve
+
+test:
+	docker compose exec user-service python -m pytest tests/ -v --cov=app --cov-report=term-missing
+	docker compose exec product-service python -m pytest tests/ -v --cov=app --cov-report=term-missing
+	docker compose exec order-service python -m pytest tests/ -v --cov=app --cov-report=term-missing

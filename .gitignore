@@ -19,4 +19,7 @@ build/
 *.log
 .venv/
 venv/
+frontend/
 node_modules/
+.progress.md
+.vscode/settings.json
