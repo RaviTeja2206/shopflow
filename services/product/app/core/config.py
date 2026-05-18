@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     )
 
     # Service identity
-    service_name: str = "shopflow-service"
+    service_name: str = "product-service"
     environment: str = "development"
     log_level: str = "INFO"
     debug: bool = False

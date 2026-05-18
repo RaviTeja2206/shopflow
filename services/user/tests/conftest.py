@@ -1,3 +1,4 @@
+import os
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
@@ -10,7 +11,9 @@ from app.db.session import get_db
 from app.db.base import Base
 from app.models import User, RefreshToken  # noqa: F401
 
-TEST_DATABASE_URL = (
+# Use DATABASE_URL from environment (set by CI) or fall back to local Docker URL
+TEST_DATABASE_URL = os.environ.get(
+    "DATABASE_URL",
     "postgresql+asyncpg://shopflow:shopflow_secret@postgres:5432/shopflow"
 )
 
@@ -47,36 +50,9 @@ async def clean_tables(session_factory):
 
 
 @pytest_asyncio.fixture
-async def db_session(session_factory):
-    """
-    Provide a session that behaves like production — commits after each operation.
-    We override get_db to use this session, but let the service layer
-    manage its own commits/rollbacks as it would in production.
-    """
-    async with session_factory() as session:
-        yield session
-
-
-@pytest_asyncio.fixture
-async def client(db_session: AsyncSession):
-    """
-    Override get_db with a session that auto-commits like production.
-    Key: we don't wrap in a transaction — each request commits independently.
-    """
-    async def override_get_db():
-        async with session_factory_for_client() as s:
-            try:
-                yield s
-                await s.commit()
-            except Exception:
-                await s.rollback()
-                raise
-            finally:
-                await s.close()
-
-    # Get the factory from the session's bind
+async def client(session_factory):
     factory = async_sessionmaker(
-        bind=db_session.bind,
+        bind=session_factory.kw["bind"],
         class_=AsyncSession,
         expire_on_commit=False,
         autocommit=False,
@@ -105,9 +81,6 @@ async def client(db_session: AsyncSession):
 
 @pytest_asyncio.fixture
 async def redis_mock():
-    """
-    Mock Redis at every import point used in the app.
-    """
     redis = AsyncMock()
     redis.exists.return_value = False
     redis.setex.return_value = True
