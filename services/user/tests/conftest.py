@@ -11,10 +11,10 @@ from app.db.session import get_db
 from app.db.base import Base
 from app.models import User, RefreshToken  # noqa: F401
 
-# Use DATABASE_URL from environment (set by CI) or fall back to local Docker URL
+# Read from environment (CI sets this to localhost, Docker uses 'postgres' hostname)
 TEST_DATABASE_URL = os.environ.get(
     "DATABASE_URL",
-    "postgresql+asyncpg://shopflow:shopflow_secret@postgres:5432/shopflow"
+    "postgresql+asyncpg://shopflow:shopflow_secret@postgres:5432/shopflow",
 )
 
 
@@ -30,7 +30,8 @@ async def test_engine():
 
 
 @pytest_asyncio.fixture(scope="session")
-def session_factory(test_engine):
+async def _session_factory(test_engine):
+    """Session-scoped factory bound to the test engine."""
     return async_sessionmaker(
         bind=test_engine,
         class_=AsyncSession,
@@ -41,18 +42,22 @@ def session_factory(test_engine):
 
 
 @pytest_asyncio.fixture(autouse=True)
-async def clean_tables(session_factory):
+async def clean_tables(_session_factory):
     yield
-    async with session_factory() as session:
+    async with _session_factory() as session:
         async with session.begin():
             await session.execute(text("DELETE FROM users.refresh_tokens"))
             await session.execute(text("DELETE FROM users.users"))
 
 
 @pytest_asyncio.fixture
-async def client(session_factory):
+async def client(test_engine):
+    """
+    Production-like client: each request gets its own session that commits on success.
+    Uses test_engine directly to avoid session_factory attribute access issues.
+    """
     factory = async_sessionmaker(
-        bind=session_factory.kw["bind"],
+        bind=test_engine,
         class_=AsyncSession,
         expire_on_commit=False,
         autocommit=False,
@@ -60,12 +65,12 @@ async def client(session_factory):
     )
 
     async def production_like_get_db():
-        async with factory() as s:
+        async with factory() as session:
             try:
-                yield s
-                await s.commit()
+                yield session
+                await session.commit()
             except Exception:
-                await s.rollback()
+                await session.rollback()
                 raise
 
     app.dependency_overrides[get_db] = production_like_get_db
