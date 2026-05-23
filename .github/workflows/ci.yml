@@ -11,6 +11,11 @@ env:
   REGISTRY: ghcr.io
   IMAGE_PREFIX: ${{ github.repository_owner }}/shopflow
 
+# Grant GITHUB_TOKEN the permissions required to make a Pages deployment
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   test:
     name: Test (${{ matrix.service }})
@@ -138,6 +143,7 @@ jobs:
     strategy:
       matrix:
         service: [user, product, order, notification]
+      fail-fast: false   # don't cancel other builds if one fails
 
     permissions:
       contents: read
