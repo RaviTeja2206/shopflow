@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  namespace: shopflow-production
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: gp2          # AWS EBS gp2 storage class
+  resources:
+    requests:
+      storage: 20Gi
