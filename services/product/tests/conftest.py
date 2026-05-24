@@ -1,20 +1,38 @@
 import os
+import uuid
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy import text
 from unittest.mock import AsyncMock, patch
+from jose import jwt
+from datetime import datetime, timedelta, timezone
 
 from app.main import app
 from app.db.session import get_db
 from app.db.base import Base
 from app.models.product import Product, Category  # noqa: F401
+from app.core.config import settings
 
 TEST_DATABASE_URL = os.environ.get(
     "DATABASE_URL",
     "postgresql+asyncpg://shopflow:shopflow_secret@postgres:5432/shopflow",
 )
+
+TEST_USER_ID  = uuid.UUID("11111111-1111-1111-1111-111111111111")
+TEST_ADMIN_ID = uuid.UUID("22222222-2222-2222-2222-222222222222")
+
+
+def make_token(user_id: uuid.UUID, role: str = "user") -> str:
+    payload = {
+        "sub": str(user_id),
+        "type": "access",
+        "role": role,
+        "jti": str(uuid.uuid4()),
+        "exp": datetime.now(timezone.utc) + timedelta(minutes=30),
+    }
+    return jwt.encode(payload, settings.secret_key, algorithm=settings.algorithm)
 
 
 @pytest_asyncio.fixture(scope="session")
@@ -90,6 +108,16 @@ async def redis_mock():
 
     with patch("app.core.redis.get_redis", return_value=redis):
         yield redis
+
+
+@pytest.fixture
+def admin_headers():
+    return {"Authorization": f"Bearer {make_token(TEST_ADMIN_ID, role='admin')}"}
+
+
+@pytest.fixture
+def user_headers():
+    return {"Authorization": f"Bearer {make_token(TEST_USER_ID, role='user')}"}
 
 
 @pytest.fixture
