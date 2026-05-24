@@ -9,8 +9,6 @@ spec:
   selector:
     app: product-service
   ports:
-    - port: 8002
-8003
-      targetPort: 8002
-8003
+    - port: 8000
+      targetPort: 8000
   type: ClusterIP

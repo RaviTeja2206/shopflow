@@ -6,7 +6,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: gp2          # AWS EBS gp2 storage class
+  storageClassName: standard    # minikube storage class (gp2 is AWS EBS)
   resources:
     requests:
-      storage: 20Gi
+      storage: 5Gi              # reduced from 20Gi — plenty for local dev

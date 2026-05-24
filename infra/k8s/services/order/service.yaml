@@ -9,6 +9,6 @@ spec:
   selector:
     app: order-service
   ports:
-    - port: 8003
-      targetPort: 8003
+    - port: 8000
+      targetPort: 8000
   type: ClusterIP

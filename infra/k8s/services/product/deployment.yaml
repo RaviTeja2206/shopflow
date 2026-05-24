@@ -24,10 +24,10 @@ spec:
     spec:
       containers:
         - name: product-service
-          image: ghcr.io/raviteja2206/shopflow-productatest
+          image: ghcr.io/raviteja2206/shopflow-product:latest
+          imagePullPolicy: IfNotPresent
           ports:
-            - containerPort: 8002
-8003
+            - containerPort: 8000
           envFrom:
             - configMapRef:
                 name: shopflow-config
@@ -35,21 +35,18 @@ spec:
                 name: shopflow-secrets
           env:
             - name: PORT
-              value: "8002
-8003"
+              value: "8000"
           readinessProbe:
             httpGet:
               path: /health
-              port: 8002
-8003
+              port: 8000
             initialDelaySeconds: 10
             periodSeconds: 5
             failureThreshold: 3
           livenessProbe:
             httpGet:
               path: /health
-              port: 8002
-8003
+              port: 8000
             initialDelaySeconds: 30
             periodSeconds: 10
             failureThreshold: 3
@@ -63,7 +60,7 @@ spec:
       initContainers:
         - name: wait-for-postgres
           image: busybox:1.36
-          command: [sh, -c, "until nc -z postgres-service 5432; do sleep 2; done"]
-        - name: wait-for-kafka
-          image: busybox:1.36
-          command: [sh, -c, "until nc -z kafka-service 9092; do sleep 2; done"]
+          command:
+            - sh
+            - -c
+            - "until nc -z postgres-service 5432; do echo 'waiting for postgres...'; sleep 2; done"
