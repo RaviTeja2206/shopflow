@@ -46,13 +46,17 @@ spec:
           readinessProbe:
             exec:
               command: [pg_isready, -U, shopflow]
-            initialDelaySeconds: 10
-            periodSeconds: 5
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
           livenessProbe:
             exec:
               command: [pg_isready, -U, shopflow]
-            initialDelaySeconds: 30
-            periodSeconds: 10
+            initialDelaySeconds: 45
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 5
           resources:
             requests:
               memory: "256Mi"
