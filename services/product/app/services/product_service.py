@@ -10,7 +10,7 @@ from sqlalchemy.orm import selectinload
 from app.core.logging import get_logger
 from app.core.redis import Cache
 from app.models.product import Category, Product
-from app.schemas.product import CategoryCreate, ProductCreate, ProductUpdate
+from app.schemas.product import CategoryCreate, ProductCreate, ProductResponse, ProductUpdate
 
 logger = get_logger(__name__)
 
@@ -157,7 +157,10 @@ class ProductService:
         if not search:
             await Cache.set(cache_key, {
                 **response,
-                "items": [],
+                "items": [
+                    ProductResponse.model_validate(p).model_dump(mode="json")
+                    for p in products
+                ],
             }, ttl=60)
 
         return response
