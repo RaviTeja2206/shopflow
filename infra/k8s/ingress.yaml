@@ -5,12 +5,8 @@ metadata:
   namespace: shopflow-production
   annotations:
     kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/rewrite-target: /
     nginx.ingress.kubernetes.io/proxy-body-size: "10m"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
-    # Rate limiting — 10 req/sec per IP, burst of 20
-    # Protects all endpoints including auth from brute force
-    # Production: enable server-snippet in nginx config for per-path limits
     nginx.ingress.kubernetes.io/limit-rps: "10"
     nginx.ingress.kubernetes.io/limit-burst-multiplier: "2"
 spec:
@@ -24,32 +20,32 @@ spec:
               service:
                 name: user-service
                 port:
-                  number: 8001
+                  number: 8000
           - path: /api/v1/users
             pathType: Prefix
             backend:
               service:
                 name: user-service
                 port:
-                  number: 8001
+                  number: 8000
           - path: /api/v1/products
             pathType: Prefix
             backend:
               service:
                 name: product-service
                 port:
-                  number: 8002
+                  number: 8000
           - path: /api/v1/categories
             pathType: Prefix
             backend:
               service:
                 name: product-service
                 port:
-                  number: 8002
+                  number: 8000
           - path: /api/v1/orders
             pathType: Prefix
             backend:
               service:
                 name: order-service
                 port:
-                  number: 8003
+                  number: 8000
