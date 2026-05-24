@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     user_service_url: str = "http://user-service:8000"
 
     secret_key: str = "change-this-in-production"
+    cors_origins: list[str] = ["http://localhost:5173", "http://localhost:3000"]
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
 
