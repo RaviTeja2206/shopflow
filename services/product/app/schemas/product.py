@@ -3,15 +3,16 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Annotated
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 # Reusable type — Decimal with max 10 digits, 2 decimal places, must be > 0
 Price = Annotated[Decimal, Field(gt=0, max_digits=10, decimal_places=2)]
 
 
 # ── Category schemas ──────────────────────────────────────────
-
 class CategoryCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     name: str = Field(min_length=2, max_length=100)
     description: str | None = None
 
@@ -22,18 +23,19 @@ class CategoryCreate(BaseModel):
 
 
 class CategoryResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: uuid.UUID
     name: str
     slug: str
     description: str | None
     created_at: datetime
 
-    model_config = {"from_attributes": True}
-
 
 # ── Product schemas ───────────────────────────────────────────
-
 class ProductCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")  # rejects unknown fields like "stock"
+
     name: str = Field(min_length=2, max_length=255)
     description: str | None = None
     price: Price
@@ -43,6 +45,8 @@ class ProductCreate(BaseModel):
 
 
 class ProductUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")  # rejects unknown fields
+
     name: str | None = Field(None, min_length=2, max_length=255)
     description: str | None = None
     price: Price | None = None
@@ -53,6 +57,8 @@ class ProductUpdate(BaseModel):
 
 
 class ProductResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: uuid.UUID
     name: str
     slug: str
@@ -66,11 +72,8 @@ class ProductResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    model_config = {"from_attributes": True}
-
 
 # ── Pagination schema ─────────────────────────────────────────
-
 class PaginatedProducts(BaseModel):
     items: list[ProductResponse]
     total: int
