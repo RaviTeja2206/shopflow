@@ -8,9 +8,14 @@ metadata:
     nginx.ingress.kubernetes.io/rewrite-target: /
     nginx.ingress.kubernetes.io/proxy-body-size: "10m"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    # Rate limiting — 10 req/sec per IP, burst of 20
+    # Protects all endpoints including auth from brute force
+    # Production: enable server-snippet in nginx config for per-path limits
+    nginx.ingress.kubernetes.io/limit-rps: "10"
+    nginx.ingress.kubernetes.io/limit-burst-multiplier: "2"
 spec:
   rules:
-    - host: api.shopflow.com          # replace with your domain in production
+    - host: api.shopflow.com
       http:
         paths:
           - path: /api/v1/auth
