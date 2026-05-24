@@ -294,7 +294,7 @@ These are intentional trade-offs for a portfolio project:
 
 | Gap | Production Solution |
 |-----|---------------------|
-| Manual K8s migrations | Kubernetes Job + Helm hook |
+| K8s migrations | ✅ Implemented as K8s Jobs (infra/k8s/jobs/) |
 | Postgres in K8s | AWS RDS (managed, automatic backups) |
 | Single postgres replica | RDS Multi-AZ |
 | No rate limiting | nginx-ingress rate limit annotations |
