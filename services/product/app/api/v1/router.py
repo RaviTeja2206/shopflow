@@ -4,6 +4,7 @@ from decimal import Decimal
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.dependencies import get_current_admin, get_current_user_id
 from app.db.session import get_db
 from app.schemas.product import (
     CategoryCreate,
@@ -20,24 +21,39 @@ router = APIRouter()
 
 # ── Categories ────────────────────────────────────────────────
 
-@router.post("/categories/", response_model=CategoryResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/categories/",
+    response_model=CategoryResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create category (admin only)",
+)
 async def create_category(
     data: CategoryCreate,
     db: AsyncSession = Depends(get_db),
+    _: uuid.UUID = Depends(get_current_admin),   # admin only
 ):
-    service = ProductService(db)
-    return await service.create_category(data)
+    return await ProductService(db).create_category(data)
 
 
-@router.get("/categories/", response_model=list[CategoryResponse])
-async def list_categories(db: AsyncSession = Depends(get_db)):
-    service = ProductService(db)
-    return await service.list_categories()
+@router.get(
+    "/categories/",
+    response_model=list[CategoryResponse],
+    summary="List categories (any authenticated user)",
+)
+async def list_categories(
+    db: AsyncSession = Depends(get_db),
+    _: uuid.UUID = Depends(get_current_user_id),  # any authenticated user
+):
+    return await ProductService(db).list_categories()
 
 
 # ── Products ──────────────────────────────────────────────────
 
-@router.get("/products/", response_model=PaginatedProducts)
+@router.get(
+    "/products/",
+    response_model=PaginatedProducts,
+    summary="List products (any authenticated user)",
+)
 async def list_products(
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=20, ge=1, le=100),
@@ -46,9 +62,9 @@ async def list_products(
     min_price: Decimal | None = Query(default=None, gt=0),
     max_price: Decimal | None = Query(default=None, gt=0),
     db: AsyncSession = Depends(get_db),
+    _: uuid.UUID = Depends(get_current_user_id),  # any authenticated user
 ):
-    service = ProductService(db)
-    return await service.list_products(
+    return await ProductService(db).list_products(
         page=page,
         page_size=page_size,
         category_id=category_id,
@@ -58,32 +74,55 @@ async def list_products(
     )
 
 
-@router.get("/products/{product_id}", response_model=ProductResponse)
-async def get_product(product_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
-    service = ProductService(db)
-    return await service.get_by_id(product_id)
+@router.get(
+    "/products/{product_id}",
+    response_model=ProductResponse,
+    summary="Get product (any authenticated user)",
+)
+async def get_product(
+    product_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    _: uuid.UUID = Depends(get_current_user_id),  # any authenticated user
+):
+    return await ProductService(db).get_by_id(product_id)
 
 
-@router.post("/products/", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/products/",
+    response_model=ProductResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create product (admin only)",
+)
 async def create_product(
     data: ProductCreate,
     db: AsyncSession = Depends(get_db),
+    _: uuid.UUID = Depends(get_current_admin),   # admin only
 ):
-    service = ProductService(db)
-    return await service.create_product(data)
+    return await ProductService(db).create_product(data)
 
 
-@router.put("/products/{product_id}", response_model=ProductResponse)
+@router.put(
+    "/products/{product_id}",
+    response_model=ProductResponse,
+    summary="Update product (admin only)",
+)
 async def update_product(
     product_id: uuid.UUID,
     data: ProductUpdate,
     db: AsyncSession = Depends(get_db),
+    _: uuid.UUID = Depends(get_current_admin),   # admin only
 ):
-    service = ProductService(db)
-    return await service.update_product(product_id, data)
+    return await ProductService(db).update_product(product_id, data)
 
 
-@router.delete("/products/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_product(product_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
-    service = ProductService(db)
-    await service.delete_product(product_id)
+@router.delete(
+    "/products/{product_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete product (admin only)",
+)
+async def delete_product(
+    product_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    _: uuid.UUID = Depends(get_current_admin),   # admin only
+):
+    await ProductService(db).delete_product(product_id)

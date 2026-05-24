@@ -64,7 +64,7 @@ class UserService:
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Account is deactivated",
             )
-        access_token = create_access_token(subject=str(user.id))
+        access_token = create_access_token(subject=str(user.id), extra_data={"role": user.role})
         refresh_token = create_refresh_token(subject=str(user.id))
         self.db.add(RefreshToken(
             user_id=user.id,
@@ -120,8 +120,10 @@ class UserService:
         # Rotate — revoke old, issue new
         db_token.is_revoked = True
         user_id = uuid.UUID(payload["sub"])
+        refreshed_user = await self.db.get(User, user_id)
+        user_role = refreshed_user.role if refreshed_user else "user"
 
-        new_access = create_access_token(subject=str(user_id))
+        new_access = create_access_token(subject=str(user_id), extra_data={"role": user_role})
         new_refresh = create_refresh_token(subject=str(user_id))
 
         self.db.add(RefreshToken(

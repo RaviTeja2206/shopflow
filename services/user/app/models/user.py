@@ -1,6 +1,7 @@
 import uuid
 
 from sqlalchemy import Boolean, ForeignKey, String, Text
+from sqlalchemy import Enum as SAEnum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -16,6 +17,16 @@ class User(Base):
     full_name: Mapped[str] = mapped_column(String(255), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    role: Mapped[str] = mapped_column(
+        String(20),
+        default="user",
+        nullable=False,
+        server_default="user",
+    )
+
+    @property
+    def is_admin(self) -> bool:
+        return self.role == "admin"
 
     refresh_tokens: Mapped[list["RefreshToken"]] = relationship(
         back_populates="user",
