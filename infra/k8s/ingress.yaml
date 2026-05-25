@@ -28,6 +28,13 @@ spec:
                 name: user-service
                 port:
                   number: 8000
+          - path: /api/v1/admin
+            pathType: Prefix
+            backend:
+              service:
+                name: user-service
+                port:
+                  number: 8000
           - path: /api/v1/products
             pathType: Prefix
             backend:
