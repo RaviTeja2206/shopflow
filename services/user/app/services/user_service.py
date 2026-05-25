@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 from fastapi import HTTPException, status
 from jose import JWTError
-from sqlalchemy import delete, select
+from sqlalchemy import delete, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.logging import get_logger
@@ -204,4 +204,70 @@ class UserService:
         if data.full_name:
             user.full_name = data.full_name
         logger.info("user_updated", user_id=str(user_id))
+        return user
+
+    async def list_users(
+        self,
+        page: int = 1,
+        page_size: int = 20,
+        search: str | None = None,
+    ) -> dict:
+        import math
+
+        query = select(User).where(User.id != None)  # noqa: E711
+
+        if search:
+            query = query.where(
+                or_(
+                    User.email.ilike(f"%{search}%"),
+                    User.full_name.ilike(f"%{search}%"),
+                )
+            )
+
+        count_query = select(func.count()).select_from(query.subquery())
+        total = await self.db.scalar(count_query)
+
+        offset = (page - 1) * page_size
+        query = query.order_by(User.created_at.desc()).offset(offset).limit(page_size)
+        result = await self.db.execute(query)
+        users = result.scalars().all()
+
+        total_pages = math.ceil(total / page_size) if total > 0 else 1
+
+        return {
+            "items": users,
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+            "total_pages": total_pages,
+            "has_next": page < total_pages,
+            "has_prev": page > 1,
+        }
+
+    async def update_role(
+        self,
+        target_user_id: uuid.UUID,
+        new_role: str,
+        requesting_user_id: uuid.UUID,
+    ) -> User:
+        if target_user_id == requesting_user_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Cannot change your own role",
+            )
+
+        user = await self.get_by_id(target_user_id)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found",
+            )
+
+        user.role = new_role
+        logger.info(
+            "user_role_updated",
+            target_user_id=str(target_user_id),
+            new_role=new_role,
+            by=str(requesting_user_id),
+        )
         return user

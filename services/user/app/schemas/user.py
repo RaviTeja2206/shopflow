@@ -55,3 +55,17 @@ class TokenResponse(BaseModel):
 
 class MessageResponse(BaseModel):
     message: str
+
+
+class RoleUpdate(BaseModel):
+    role: str = Field(pattern="^(admin|user)$")
+
+
+class PaginatedUsers(BaseModel):
+    items: list[UserResponse]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
+    has_next: bool
+    has_prev: bool
